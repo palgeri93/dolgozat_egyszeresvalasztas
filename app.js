@@ -19,7 +19,7 @@ function hideStatus() { STATUS.classList.add("hidden"); }
 let API_BASE =
   window.location.hostname === "localhost"
     ? "http://localhost:3000"
-    : "https://szodolgozat.onrender.com";
+    : "https://dolgozat-egyszeresvalasztas.onrender.com";
 
 const apiBaseInput = el("apiBaseInput");
 apiBaseInput.value = API_BASE;
