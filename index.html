@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Online dolgozat – feleletválasztós</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <div class="max-w-5xl mx-auto p-4 sm:p-8">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold">Online dolgozat (feleletválasztós)</h1>
+        <p class="text-slate-600">Tanár: Excel feltöltés → kód → beállítások. Tanuló: kód + név → teszt.</p>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow p-4 w-full sm:w-[460px]">
+        <label class="block text-sm font-semibold mb-2">Backend API címe</label>
+        <input id="apiBaseInput" class="w-full border rounded-lg p-2" placeholder="https://valami.onrender.com" />
+        <div class="text-xs text-slate-500 mt-2">
+          Tipp: GitHub Pages-en automatikusan Render URL, localhoston automatikusan <code>http://localhost:3000</code>.
+        </div>
+      </div>
+    </div>
+
+    <div id="status" class="p-3 rounded bg-amber-100 text-amber-900 mb-4 hidden"></div>
+
+    <div class="flex gap-2 mb-4">
+      <button id="roleStudentBtn" class="px-4 py-2 rounded-xl font-semibold bg-slate-900 text-white">Tanuló</button>
+      <button id="roleTeacherBtn" class="px-4 py-2 rounded-xl font-semibold bg-slate-200 hover:bg-slate-300">Tanár</button>
+    </div>
+
+    <!-- Teacher panel -->
+    <div id="teacherPanel" class="bg-white rounded-2xl shadow p-4 mb-6 hidden">
+      <div class="grid gap-4 sm:grid-cols-3">
+        <div class="sm:col-span-1">
+          <div class="font-bold mb-2">Tanári belépés</div>
+          <label class="block text-sm font-semibold mb-2">Tanári jelszó</label>
+          <input id="teacherPassword" type="password" class="w-full border rounded-lg p-2" placeholder="jelszó" />
+          <button id="teacherLoginBtn" class="mt-3 w-full bg-slate-900 text-white rounded-xl py-2 font-semibold hover:bg-slate-800">
+            Belépés
+          </button>
+          <div id="teacherAuthed" class="mt-3 text-sm text-emerald-700 hidden">✓ Bejelentkezve</div>
+
+          <hr class="my-4" />
+
+          <div class="font-bold mb-2">Kérdésbank (Excel) feltöltés</div>
+          <input id="excelFileInput" type="file" accept=".xlsx" class="w-full" />
+          <button id="uploadExcelBtn" class="mt-3 w-full bg-indigo-600 text-white rounded-xl py-2 font-semibold hover:bg-indigo-500">
+            Excel feltöltése
+          </button>
+          <div class="text-xs text-slate-600 mt-2">
+            Excel struktúra: A kérdés, B–E opciók, F helyes betű (B/C/D/E).
+          </div>
+          <div class="text-sm mt-2">
+            Aktív bank: <b id="activeBankLine">—</b>
+          </div>
+
+          <hr class="my-4" />
+
+          <div class="font-bold mb-2">Tanulói kód</div>
+          <div class="flex gap-2">
+            <input id="studentCode" class="flex-1 border rounded-lg p-2" placeholder="pl. ABC123" />
+            <button id="genCodeBtn" class="px-3 rounded-xl bg-slate-200 hover:bg-slate-300 font-semibold">Generál</button>
+          </div>
+
+          <button id="publishSessionBtn" class="mt-4 w-full bg-emerald-600 text-white rounded-xl py-2 font-semibold hover:bg-emerald-500">
+            Session mentése a kódhoz
+          </button>
+
+          <button id="downloadXlsxBtn" class="mt-3 w-full bg-slate-900 text-white rounded-xl py-2 font-semibold hover:bg-slate-800">
+            Eredmények letöltése (.xlsx)
+          </button>
+
+          <div class="text-xs text-slate-500 mt-2">
+            Export tanári tokennel védett.
+          </div>
+        </div>
+
+        <div class="sm:col-span-2">
+          <div class="font-bold mb-2">Dolgozat beállításai</div>
+          <div class="text-sm text-slate-600 mb-3">
+            Nincs munkalap választás. A feltöltött Excel <b>első</b> munkalapját használjuk.
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="grid grid-cols-2 gap-3 sm:col-span-2">
+              <div>
+                <label class="block text-sm font-semibold mb-2">Hanyadik sortól</label>
+                <input id="rowFrom" type="number" min="1" value="2" class="w-full border rounded-lg p-2" />
+                <div class="text-xs text-slate-500 mt-1">Tipp: 1. sor fejléc, akkor kezd 2-től.</div>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-2">Hanyadik sorig</label>
+                <input id="rowTo" type="number" min="1" value="999999" class="w-full border rounded-lg p-2" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold mb-2">Kérdések száma</label>
+              <input id="questionCount" type="number" min="1" value="10" class="w-full border rounded-lg p-2" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold mb-2">Idő / kérdés (másodperc)</label>
+              <input id="perQuestionTimeSec" type="number" min="1" value="15" class="w-full border rounded-lg p-2" />
+            </div>
+
+            <div class="sm:col-span-2">
+              <div class="text-sm text-slate-600">Bank stat:</div>
+              <div class="text-sm"><b id="bankStats">—</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Student + Quiz -->
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="bg-white rounded-2xl shadow p-4">
+        <div class="font-bold mb-2">Tanuló</div>
+
+        <label class="block text-sm font-semibold mb-2">Tanulói kód</label>
+        <div class="flex gap-2">
+          <input id="studentCodeInput" class="flex-1 border rounded-lg p-2" placeholder="pl. ABC123" />
+          <button id="loadConfigBtn" class="px-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800">
+            Kód betöltése
+          </button>
+        </div>
+
+        <label class="block text-sm font-semibold mt-4 mb-2">Név</label>
+        <input id="nameInput" class="w-full border rounded-lg p-2" placeholder="Pl. Anna" />
+
+        <button id="startBtn" class="mt-4 w-full bg-emerald-600 text-white rounded-xl py-2 font-semibold hover:bg-emerald-500">
+          Indítás
+        </button>
+
+        <div class="mt-4 text-sm text-slate-600">
+          Betöltött beállítások: <b id="loadedConfigLine">—</b>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow p-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-sm text-slate-600">Pontszám</div>
+            <div class="text-3xl font-bold"><span id="score">0</span></div>
+          </div>
+          <div class="text-right">
+            <div class="text-sm text-slate-600">Haladás</div>
+            <div class="text-lg font-semibold"><span id="progress">0/0</span></div>
+          </div>
+        </div>
+
+        <div class="mt-3 flex items-center justify-between">
+          <div class="text-sm text-slate-600">Idő (aktuális kérdés)</div>
+          <div class="text-lg font-semibold"><span id="qTimer">--</span></div>
+        </div>
+
+        <hr class="my-4"/>
+
+        <div id="quizArea" class="hidden">
+          <div class="text-sm text-slate-600 mb-2" id="metaLine"></div>
+          <div class="text-xl font-bold mb-4" id="prompt">—</div>
+          <div id="mcArea" class="space-y-2"></div>
+          <div id="feedback" class="mt-4 p-3 rounded-lg hidden"></div>
+        </div>
+
+        <div id="idleArea" class="text-slate-600">
+          Add meg a kódot → <b>Kód betöltése</b> → név → <b>Indítás</b>.
+        </div>
+      </div>
+    </div>
+
+    <div class="text-xs text-slate-500 mt-6">
+      Megjegyzés: GitHub Pages csak a frontendet futtatja; a backend külön fut (Render).
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
